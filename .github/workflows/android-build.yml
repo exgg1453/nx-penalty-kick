@@ -22,20 +22,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Diagnose environment
+      - name: Copy baked-in Godot configuration
         run: |
-          echo "HOME=$HOME" > /tmp/diag.txt
-          echo "---find stable dirs---" >> /tmp/diag.txt
-          find / -maxdepth 8 -iname "*.stable" 2>/dev/null >> /tmp/diag.txt
-          echo "---root config godot---" >> /tmp/diag.txt
-          ls -la /root/.config/godot 2>&1 >> /tmp/diag.txt
-          echo "---root local share godot---" >> /tmp/diag.txt
-          find /root/.local/share/godot 2>&1 >> /tmp/diag.txt
-          echo "---github home---" >> /tmp/diag.txt
-          ls -la /github/home 2>&1 >> /tmp/diag.txt
-          echo "---env sdk vars---" >> /tmp/diag.txt
-          env | grep -i -E "sdk|godot|java|home" >> /tmp/diag.txt
-          cat /tmp/diag.txt
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          mkdir -p "$HOME/.config/godot"
+          cp -r /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
 
       - name: Create build directory
         run: mkdir -v -p build
@@ -76,13 +68,10 @@ jobs:
           fi
 
       - name: Write combined error log
-        if: always()
+        if: steps.check.outputs.success == 'false'
         run: |
           mkdir -p .ci
           {
-            echo "----- DIAGNOSTIC -----"
-            cat /tmp/diag.txt 2>/dev/null || echo "(no diag)"
-            echo ""
             echo "----- DEBUG EXPORT LOG -----"
             cat build/debug-output.log 2>/dev/null || echo "(no log)"
             echo ""
@@ -91,7 +80,7 @@ jobs:
           } > .ci/last-error.txt
 
       - name: Publish error log to repo
-        if: always()
+        if: steps.check.outputs.success == 'false'
         uses: actions/github-script@v7
         with:
           script: |
