@@ -28,6 +28,17 @@ jobs:
           mkdir -p "$HOME/.config/godot"
           cp -r /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
           cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+          {
+            echo "----- editor settings -----"
+            cat "$HOME/.config/godot/editor_settings-4.3.tres"
+            echo "----- java -----"
+            which java keytool jarsigner apksigner zipalign 2>&1 || true
+            echo "JAVA_HOME=$JAVA_HOME"
+            echo "----- android sdk -----"
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            ls -la "$ANDROID_HOME" 2>&1 || true
+            ls -la "$ANDROID_HOME/build-tools" 2>&1 || true
+          } > /tmp/settings_diag.txt
 
       - name: Create build directory
         run: mkdir -v -p build
@@ -53,7 +64,9 @@ jobs:
       - name: Export debug APK
         continue-on-error: true
         run: |
-          echo "----- export_presets.cfg -----" > build/debug-output.log
+          echo "----- settings diag -----" > build/debug-output.log
+          cat /tmp/settings_diag.txt >> build/debug-output.log
+          echo "----- export_presets.cfg -----" >> build/debug-output.log
           sed 's/password=".*"/password="REDACTED"/' export_presets.cfg >> build/debug-output.log
           echo "----- keystores -----" >> build/debug-output.log
           ls -la /root/*.keystore >> build/debug-output.log 2>&1
