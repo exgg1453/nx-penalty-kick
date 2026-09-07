@@ -1,4 +1,41 @@
 ----- DEBUG EXPORT LOG -----
+----- settings diag -----
+----- editor settings -----
+[gd_resource type="EditorSettings" format=3]
+[resource]
+export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+export/android/android_sdk_path = "/usr/lib/android-sdk"
+export/android/debug_keystore = "/root/debug.keystore"
+export/android/debug_keystore_user = "androiddebugkey"
+export/android/debug_keystore_pass = "android"
+export/android/force_system_user = false
+export/android/timestamping_authority_url = ""
+export/android/shutdown_adb_on_exit = true
+export/windows/rcedit = "/opt/rcedit.exe"
+export/windows/wine = "/usr/bin/wine64-stable"
+----- java -----
+/usr/bin/java
+/usr/bin/keytool
+/usr/bin/jarsigner
+JAVA_HOME=
+----- android sdk -----
+ANDROID_HOME=/usr/lib/android-sdk
+total 52
+drwxr-xr-x 1 root root 4096 Oct 22  2024 .
+drwxr-xr-x 1 root root 4096 Oct 22  2024 ..
+-rw-r--r-- 1 root root   16 Oct 22  2024 .knownPackages
+drwxr-xr-x 2 root root 4096 Oct 22  2024 .temp
+drwxr-xr-x 3 root root 4096 Oct 22  2024 build-tools
+drwxr-xr-x 3 root root 4096 Oct 22  2024 cmake
+drwxr-xr-x 1 root root 4096 Oct 22  2024 cmdline-tools
+drwxr-xr-x 2 root root 4096 Oct 22  2024 licenses
+drwxr-xr-x 3 root root 4096 Oct 22  2024 ndk
+drwxr-xr-x 1 root root 4096 Oct 22  2024 platform-tools
+drwxr-xr-x 3 root root 4096 Oct 22  2024 platforms
+total 16
+drwxr-xr-x 3 root root 4096 Oct 22  2024 .
+drwxr-xr-x 1 root root 4096 Oct 22  2024 ..
+drwxr-xr-x 6 root root 4096 Oct 22  2024 33.0.2
 ----- export_presets.cfg -----
 [preset.0]
 
@@ -71,8 +108,8 @@ keystore/release_password="REDACTED"
 one_click_deploy/clear_previous_install=false
 ----- keystores -----
 -rw-r--r-- 1 root root 2666 Oct 22  2024 /root/debug.keystore
--rw-r--r-- 1 root root 2666 Sep  7 21:07 /root/nx-debug.keystore
--rw-r--r-- 1 root root 2758 Sep  7 21:07 /root/nx-release.keystore
+-rw-r--r-- 1 root root 2666 Sep  7 21:10 /root/nx-debug.keystore
+-rw-r--r-- 1 root root 2758 Sep  7 21:10 /root/nx-release.keystore
 ----- godot export -----
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -481,6 +518,7 @@ ERROR: Cannot export project with preset "Android" due to configuration errors:
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android" failed.
    at: _fs_changed (editor/editor_node.cpp:1028)
+cannot connect to daemon at tcp:5037: Connection refused
 EditorSettings: Save OK!
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
