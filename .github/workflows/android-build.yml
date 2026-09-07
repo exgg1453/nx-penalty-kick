@@ -38,6 +38,9 @@ jobs:
             echo "ANDROID_HOME=$ANDROID_HOME"
             ls -la "$ANDROID_HOME" 2>&1 || true
             ls -la "$ANDROID_HOME/build-tools" 2>&1 || true
+            echo "----- java sdk path check -----"
+            ls -la /usr/lib/jvm/java-17-openjdk-amd64 2>&1 || true
+            ls -la /usr/lib/jvm/ 2>&1 || true
           } > /tmp/settings_diag.txt
 
       - name: Create build directory
