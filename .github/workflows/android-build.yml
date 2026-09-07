@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  checks: write
 
 jobs:
   export:
@@ -22,16 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Diagnostic ping write
-        run: |
-          echo "ping-from-ci $(date -u +%s)" > /tmp/ping.txt
-          PING_B64=$(base64 -w0 /tmp/ping.txt)
-          curl -s -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/contents/.ci/ping.txt" \
-            -d "{\"message\":\"CI ping [skip ci]\",\"content\":\"$PING_B64\",\"branch\":\"main\"}" \
-            -o /tmp/ping_response.txt -w "PING_HTTP_STATUS:%{http_code}\n"
-          cat /tmp/ping_response.txt
 
       - name: Register export templates
         continue-on-error: true
@@ -82,26 +71,33 @@ jobs:
 
       - name: Publish error log to repo
         if: steps.check.outputs.success == 'false'
-        continue-on-error: true
-        run: |
-          set +e
-          CONTENT_B64=$(base64 -w0 .ci/last-error.txt)
-          EXISTING_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main")
-          EXISTING_SHA=$(echo "$EXISTING_JSON" | grep -o '"sha": *"[a-f0-9]*"' | head -1 | grep -o '[a-f0-9]\{40\}')
-          if [ -z "$EXISTING_SHA" ]; then
-            PUT_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
-              -d "{\"message\":\"Update CI error log [skip ci]\",\"content\":\"$CONTENT_B64\",\"branch\":\"main\"}")
-          else
-            PUT_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
-              -d "{\"message\":\"Update CI error log [skip ci]\",\"content\":\"$CONTENT_B64\",\"sha\":\"$EXISTING_SHA\",\"branch\":\"main\"}")
-          fi
-          echo "$PUT_RESPONSE" > /tmp/put_response.txt
-          DIAG_TEXT=$(sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e ':a;N;$!ba;s/\n/\\n/g' /tmp/put_response.txt)
-          curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/check-runs" \
-            -d "{\"name\":\"ci-log-publish-diagnostic\",\"head_sha\":\"${{ github.sha }}\",\"status\":\"completed\",\"conclusion\":\"neutral\",\"output\":{\"title\":\"Publish diagnostic\",\"summary\":\"diagnostic\",\"text\":\"$DIAG_TEXT\"}}"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const content = fs.readFileSync('.ci/last-error.txt', 'utf8');
+            const contentB64 = Buffer.from(content).toString('base64');
+            let sha;
+            try {
+              const existing = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: '.ci/last-error.txt',
+                ref: 'main',
+              });
+              sha = existing.data.sha;
+            } catch (e) {
+              sha = undefined;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: '.ci/last-error.txt',
+              message: 'Update CI error log [skip ci]',
+              content: contentB64,
+              branch: 'main',
+              sha: sha,
+            });
 
       - name: Upload error log artifact
         if: steps.check.outputs.success == 'false'
