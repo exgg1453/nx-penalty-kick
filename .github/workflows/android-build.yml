@@ -1,0 +1,81 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  export:
+    name: Export Android APKs
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Register export templates
+        continue-on-error: true
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION} ~/.local/share/godot/export_templates/${GODOT_VERSION}
+
+      - name: Create build directory
+        run: mkdir -v -p build
+
+      - name: Decode release keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /root/nx-release.keystore
+
+      - name: Inject release signing config
+        run: |
+          sed -i "s#__RELEASE_KEYSTORE_PATH__#/root/nx-release.keystore#g" export_presets.cfg
+          sed -i "s#__RELEASE_KEY_ALIAS__#${{ secrets.ANDROID_KEY_ALIAS }}#g" export_presets.cfg
+          sed -i "s#__RELEASE_KEY_PASSWORD__#${{ secrets.ANDROID_KEY_PASSWORD }}#g" export_presets.cfg
+
+      - name: Export debug APK
+        run: |
+          godot --headless --verbose --export-debug "Android" build/nx-penalty-kick-debug.apk 2> build/debug-error.log
+          echo "DEBUG_EXPORT_STATUS=$?" >> $GITHUB_ENV
+
+      - name: Export release APK
+        run: |
+          godot --headless --verbose --export-release "Android" build/nx-penalty-kick-release.apk 2> build/release-error.log
+          echo "RELEASE_EXPORT_STATUS=$?" >> $GITHUB_ENV
+
+      - name: Collect error log
+        if: always()
+        run: |
+          echo "----- DEBUG EXPORT LOG -----" > build/error.txt
+          cat build/debug-error.log >> build/error.txt || true
+          echo "" >> build/error.txt
+          echo "----- RELEASE EXPORT LOG -----" >> build/error.txt
+          cat build/release-error.log >> build/error.txt || true
+
+      - name: Upload error log
+        if: ${{ !(hashFiles('build/nx-penalty-kick-debug.apk') != '' && hashFiles('build/nx-penalty-kick-release.apk') != '') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: error
+          path: build/error.txt
+
+      - name: Fail if any export failed
+        run: |
+          if [ ! -f build/nx-penalty-kick-debug.apk ] || [ ! -f build/nx-penalty-kick-release.apk ]; then
+            echo "Export failed, see error artifact"
+            exit 1
+          fi
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nx-penalty-kick-debug
+          path: build/nx-penalty-kick-debug.apk
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nx-penalty-kick-release
+          path: build/nx-penalty-kick-release.apk
