@@ -73,13 +73,7 @@ jobs:
         if: steps.check.outputs.success == 'false'
         run: |
           CONTENT_B64=$(base64 -w0 .ci/last-error.txt)
-          EXISTING_SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main" \
-            | python3 -c "import json,sys
-try:
-    print(json.load(sys.stdin).get('sha',''))
-except Exception:
-    print('')")
+          EXISTING_SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))")
           if [ -z "$EXISTING_SHA" ]; then
             curl -s -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
