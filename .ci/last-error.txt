@@ -8,6 +8,7 @@ Using "default" pen tablet driver...
 TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
 CORE API HASH: 966092234
 EDITOR API HASH: 444927587
+EditorSettings: Load OK!
 EditorTheme: Generating new theme for the config '66886095'.
 EditorTheme: Generating new icons.
 EditorTheme: Generating new fonts.
@@ -368,12 +369,6 @@ EditorSettings: Save OK!
 Could not find version of build tools that matches Target SDK, using 33.0.2
 Could not find version of build tools that matches Target SDK, using 33.0.2
 ERROR: Cannot export project with preset "Android" due to configuration errors:
-No export template found at the expected path:
-/github/home/.local/share/godot/export_templates/4.3.stable/android_debug.apk
-No export template found at the expected path:
-/github/home/.local/share/godot/export_templates/4.3.stable/android_release.apk
-Debug keystore not configured in the Editor Settings nor in the preset.
-A valid Java SDK path is required in Editor Settings.
 
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android" failed.
@@ -407,11 +402,6 @@ EditorSettings: Save OK!
 Could not find version of build tools that matches Target SDK, using 33.0.2
 Could not find version of build tools that matches Target SDK, using 33.0.2
 ERROR: Cannot export project with preset "Android" due to configuration errors:
-No export template found at the expected path:
-/github/home/.local/share/godot/export_templates/4.3.stable/android_debug.apk
-No export template found at the expected path:
-/github/home/.local/share/godot/export_templates/4.3.stable/android_release.apk
-A valid Java SDK path is required in Editor Settings.
 
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android" failed.
