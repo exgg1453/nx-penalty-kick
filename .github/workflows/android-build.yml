@@ -17,25 +17,30 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
+    env:
+      HOME: /root
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Register export templates
-        continue-on-error: true
-        run: |
-          mkdir -v -p ~/.local/share/godot/export_templates
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION} ~/.local/share/godot/export_templates/${GODOT_VERSION}
-
       - name: Create build directory
         run: mkdir -v -p build
+
+      - name: Generate debug keystore
+        run: |
+          if [ ! -f /root/nx-debug.keystore ]; then
+            keytool -genkeypair -v -keystore /root/nx-debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
+          fi
 
       - name: Decode release keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /root/nx-release.keystore
 
-      - name: Inject release signing config
+      - name: Inject signing config
         run: |
+          sed -i "s#__DEBUG_KEYSTORE_PATH__#/root/nx-debug.keystore#g" export_presets.cfg
+          sed -i "s#__DEBUG_KEY_ALIAS__#androiddebugkey#g" export_presets.cfg
+          sed -i "s#__DEBUG_KEY_PASSWORD__#android#g" export_presets.cfg
           sed -i "s#__RELEASE_KEYSTORE_PATH__#/root/nx-release.keystore#g" export_presets.cfg
           sed -i "s#__RELEASE_KEY_ALIAS__#${{ secrets.ANDROID_KEY_ALIAS }}#g" export_presets.cfg
           sed -i "s#__RELEASE_KEY_PASSWORD__#${{ secrets.ANDROID_KEY_PASSWORD }}#g" export_presets.cfg
