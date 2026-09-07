@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.ci/**'
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   export:
@@ -36,45 +41,75 @@ jobs:
           sed -i "s#__RELEASE_KEY_PASSWORD__#${{ secrets.ANDROID_KEY_PASSWORD }}#g" export_presets.cfg
 
       - name: Export debug APK
-        run: |
-          godot --headless --verbose --export-debug "Android" build/nx-penalty-kick-debug.apk 2> build/debug-error.log
-          echo "DEBUG_EXPORT_STATUS=$?" >> $GITHUB_ENV
+        continue-on-error: true
+        run: godot --headless --verbose --export-debug "Android" build/nx-penalty-kick-debug.apk > build/debug-output.log 2>&1
 
       - name: Export release APK
-        run: |
-          godot --headless --verbose --export-release "Android" build/nx-penalty-kick-release.apk 2> build/release-error.log
-          echo "RELEASE_EXPORT_STATUS=$?" >> $GITHUB_ENV
+        continue-on-error: true
+        run: godot --headless --verbose --export-release "Android" build/nx-penalty-kick-release.apk > build/release-output.log 2>&1
 
-      - name: Collect error log
-        if: always()
+      - name: Check export results
+        id: check
         run: |
-          echo "----- DEBUG EXPORT LOG -----" > build/error.txt
-          cat build/debug-error.log >> build/error.txt || true
-          echo "" >> build/error.txt
-          echo "----- RELEASE EXPORT LOG -----" >> build/error.txt
-          cat build/release-error.log >> build/error.txt || true
+          if [ -f build/nx-penalty-kick-debug.apk ] && [ -f build/nx-penalty-kick-release.apk ]; then
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Upload error log
-        if: ${{ !(hashFiles('build/nx-penalty-kick-debug.apk') != '' && hashFiles('build/nx-penalty-kick-release.apk') != '') }}
+      - name: Write combined error log
+        if: steps.check.outputs.success == 'false'
+        run: |
+          mkdir -p .ci
+          {
+            echo "----- DEBUG EXPORT LOG -----"
+            cat build/debug-output.log 2>/dev/null || echo "(no log)"
+            echo ""
+            echo "----- RELEASE EXPORT LOG -----"
+            cat build/release-output.log 2>/dev/null || echo "(no log)"
+          } > .ci/last-error.txt
+
+      - name: Publish error log to repo
+        if: steps.check.outputs.success == 'false'
+        run: |
+          CONTENT_B64=$(base64 -w0 .ci/last-error.txt)
+          EXISTING_SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main" \
+            | python3 -c "import json,sys
+try:
+    print(json.load(sys.stdin).get('sha',''))
+except Exception:
+    print('')")
+          if [ -z "$EXISTING_SHA" ]; then
+            curl -s -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
+              -d "{\"message\":\"Update CI error log [skip ci]\",\"content\":\"$CONTENT_B64\",\"branch\":\"main\"}"
+          else
+            curl -s -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
+              -d "{\"message\":\"Update CI error log [skip ci]\",\"content\":\"$CONTENT_B64\",\"sha\":\"$EXISTING_SHA\",\"branch\":\"main\"}"
+          fi
+
+      - name: Upload error log artifact
+        if: steps.check.outputs.success == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: error
-          path: build/error.txt
+          path: .ci/last-error.txt
 
-      - name: Fail if any export failed
-        run: |
-          if [ ! -f build/nx-penalty-kick-debug.apk ] || [ ! -f build/nx-penalty-kick-release.apk ]; then
-            echo "Export failed, see error artifact"
-            exit 1
-          fi
+      - name: Fail if export failed
+        if: steps.check.outputs.success == 'false'
+        run: exit 1
 
       - name: Upload debug APK
+        if: steps.check.outputs.success == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nx-penalty-kick-debug
           path: build/nx-penalty-kick-debug.apk
 
       - name: Upload release APK
+        if: steps.check.outputs.success == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nx-penalty-kick-release
