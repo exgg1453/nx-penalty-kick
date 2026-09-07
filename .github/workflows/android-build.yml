@@ -52,7 +52,13 @@ jobs:
 
       - name: Export debug APK
         continue-on-error: true
-        run: godot --headless --verbose --export-debug "Android" build/nx-penalty-kick-debug.apk > build/debug-output.log 2>&1
+        run: |
+          echo "----- export_presets.cfg -----" > build/debug-output.log
+          sed 's/password=".*"/password="REDACTED"/' export_presets.cfg >> build/debug-output.log
+          echo "----- keystores -----" >> build/debug-output.log
+          ls -la /root/*.keystore >> build/debug-output.log 2>&1
+          echo "----- godot export -----" >> build/debug-output.log
+          godot --headless --verbose --export-debug "Android" build/nx-penalty-kick-debug.apk >> build/debug-output.log 2>&1
 
       - name: Export release APK
         continue-on-error: true
