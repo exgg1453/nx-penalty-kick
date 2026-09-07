@@ -17,12 +17,25 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
-    env:
-      HOME: /root
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Diagnose environment
+        run: |
+          echo "HOME=$HOME" > /tmp/diag.txt
+          echo "---find stable dirs---" >> /tmp/diag.txt
+          find / -maxdepth 8 -iname "*.stable" 2>/dev/null >> /tmp/diag.txt
+          echo "---root config godot---" >> /tmp/diag.txt
+          ls -la /root/.config/godot 2>&1 >> /tmp/diag.txt
+          echo "---root local share godot---" >> /tmp/diag.txt
+          find /root/.local/share/godot 2>&1 >> /tmp/diag.txt
+          echo "---github home---" >> /tmp/diag.txt
+          ls -la /github/home 2>&1 >> /tmp/diag.txt
+          echo "---env sdk vars---" >> /tmp/diag.txt
+          env | grep -i -E "sdk|godot|java|home" >> /tmp/diag.txt
+          cat /tmp/diag.txt
 
       - name: Create build directory
         run: mkdir -v -p build
@@ -63,10 +76,13 @@ jobs:
           fi
 
       - name: Write combined error log
-        if: steps.check.outputs.success == 'false'
+        if: always()
         run: |
           mkdir -p .ci
           {
+            echo "----- DIAGNOSTIC -----"
+            cat /tmp/diag.txt 2>/dev/null || echo "(no diag)"
+            echo ""
             echo "----- DEBUG EXPORT LOG -----"
             cat build/debug-output.log 2>/dev/null || echo "(no log)"
             echo ""
@@ -75,7 +91,7 @@ jobs:
           } > .ci/last-error.txt
 
       - name: Publish error log to repo
-        if: steps.check.outputs.success == 'false'
+        if: always()
         uses: actions/github-script@v7
         with:
           script: |
