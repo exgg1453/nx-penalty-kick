@@ -71,9 +71,12 @@ jobs:
 
       - name: Publish error log to repo
         if: steps.check.outputs.success == 'false'
+        continue-on-error: true
         run: |
+          set +e
           CONTENT_B64=$(base64 -w0 .ci/last-error.txt)
-          EXISTING_SHA=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sha',''))")
+          EXISTING_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt?ref=main")
+          EXISTING_SHA=$(echo "$EXISTING_JSON" | grep -o '"sha": *"[a-f0-9]*"' | head -1 | grep -o '[a-f0-9]\{40\}')
           if [ -z "$EXISTING_SHA" ]; then
             curl -s -X PUT -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/contents/.ci/last-error.txt" \
