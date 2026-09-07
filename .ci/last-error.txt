@@ -1,3 +1,65 @@
+----- DIAGNOSTIC -----
+HOME=/github/home
+---find stable dirs---
+/root/.local/share/godot/export_templates/4.3.stable
+---root config godot---
+total 28
+drwxr-xr-x 1 root root 4096 Oct 22  2024 .
+drwxr-xr-x 1 root root 4096 Oct 22  2024 ..
+-rw-r--r-- 1 root root  558 Oct 22  2024 editor_settings-4.3.tres
+drwxr-xr-x 2 root root 4096 Oct 22  2024 feature_profiles
+drwxr-xr-x 2 root root 4096 Oct 22  2024 script_templates
+drwxr-xr-x 2 root root 4096 Oct 22  2024 text_editor_themes
+---root local share godot---
+/root/.local/share/godot
+/root/.local/share/godot/export_templates
+/root/.local/share/godot/export_templates/4.3.stable
+/root/.local/share/godot/export_templates/4.3.stable/web_nothreads_debug.zip
+/root/.local/share/godot/export_templates/4.3.stable/linux_release.x86_32
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_x86_32.exe
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_x86_64_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_x86_64.exe
+/root/.local/share/godot/export_templates/4.3.stable/macos.zip
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_x86_32_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/web_nothreads_release.zip
+/root/.local/share/godot/export_templates/4.3.stable/web_debug.zip
+/root/.local/share/godot/export_templates/4.3.stable/linux_debug.arm32
+/root/.local/share/godot/export_templates/4.3.stable/version.txt
+/root/.local/share/godot/export_templates/4.3.stable/linux_release.arm32
+/root/.local/share/godot/export_templates/4.3.stable/web_dlink_nothreads_release.zip
+/root/.local/share/godot/export_templates/4.3.stable/ios.zip
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_arm64.exe
+/root/.local/share/godot/export_templates/4.3.stable/linux_debug.x86_64
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_arm64_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_x86_32.exe
+/root/.local/share/godot/export_templates/4.3.stable/web_dlink_debug.zip
+/root/.local/share/godot/export_templates/4.3.stable/linux_debug.arm64
+/root/.local/share/godot/export_templates/4.3.stable/android_release.apk
+/root/.local/share/godot/export_templates/4.3.stable/linux_debug.x86_32
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_x86_64.exe
+/root/.local/share/godot/export_templates/4.3.stable/android_source.zip
+/root/.local/share/godot/export_templates/4.3.stable/web_dlink_nothreads_debug.zip
+/root/.local/share/godot/export_templates/4.3.stable/web_dlink_release.zip
+/root/.local/share/godot/export_templates/4.3.stable/windows_release_arm64.exe
+/root/.local/share/godot/export_templates/4.3.stable/android_debug.apk
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_x86_32_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_arm64_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/linux_release.x86_64
+/root/.local/share/godot/export_templates/4.3.stable/windows_debug_x86_64_console.exe
+/root/.local/share/godot/export_templates/4.3.stable/linux_release.arm64
+/root/.local/share/godot/export_templates/4.3.stable/web_release.zip
+/root/.local/share/godot/app_userdata
+/root/.local/share/godot/app_userdata/[unnamed project]
+/root/.local/share/godot/projects.cfg
+---github home---
+total 8
+drwxr-xr-x 2 1001 1001 4096 Sep  7 21:03 .
+drwxr-xr-x 4 root root 4096 Sep  7 21:03 ..
+---env sdk vars---
+HOME=/github/home
+PATH=/usr/lib/android-sdk/cmdline-tools/cmdline-tools/bin:/opt/butler/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ANDROID_HOME=/usr/lib/android-sdk
+
 ----- DEBUG EXPORT LOG -----
 Godot Engine v4.3.stable.official.77dcf97d8 - https://godotengine.org
 TextServer: Added interface "Dummy"
@@ -8,7 +70,6 @@ Using "default" pen tablet driver...
 TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
 CORE API HASH: 966092234
 EDITOR API HASH: 444927587
-EditorSettings: Load OK!
 EditorTheme: Generating new theme for the config '66886095'.
 EditorTheme: Generating new icons.
 EditorTheme: Generating new fonts.
@@ -369,6 +430,11 @@ EditorSettings: Save OK!
 Could not find version of build tools that matches Target SDK, using 33.0.2
 Could not find version of build tools that matches Target SDK, using 33.0.2
 ERROR: Cannot export project with preset "Android" due to configuration errors:
+No export template found at the expected path:
+/github/home/.local/share/godot/export_templates/4.3.stable/android_debug.apk
+No export template found at the expected path:
+/github/home/.local/share/godot/export_templates/4.3.stable/android_release.apk
+A valid Java SDK path is required in Editor Settings.
 
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android" failed.
@@ -402,6 +468,11 @@ EditorSettings: Save OK!
 Could not find version of build tools that matches Target SDK, using 33.0.2
 Could not find version of build tools that matches Target SDK, using 33.0.2
 ERROR: Cannot export project with preset "Android" due to configuration errors:
+No export template found at the expected path:
+/github/home/.local/share/godot/export_templates/4.3.stable/android_debug.apk
+No export template found at the expected path:
+/github/home/.local/share/godot/export_templates/4.3.stable/android_release.apk
+A valid Java SDK path is required in Editor Settings.
 
    at: _fs_changed (editor/editor_node.cpp:1012)
 ERROR: Project export for preset "Android" failed.
